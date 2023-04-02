@@ -5,6 +5,9 @@ const $tetrisWrapper = document.querySelector('#tetris-wrapper > ul');
 const $gameover = document.querySelector('#gameover');
 const $score = document.querySelector('#score');
 const $restart = document.querySelector('#regame');
+const $start = document.querySelector("#start-btn");
+const $stop = document.querySelector("#stop-btn");
+
 
 // Setting
 const rows = 20;
@@ -26,20 +29,27 @@ const MovingItem = {
 // Function
 //////////////////
 
-init();
-
-// 시작 함수
-function init() {
+window.onload = () => {
     tempMovingItem = { ...MovingItem };
 
     // tetris 그려줌
     for (let i = 0; i < rows; i++) {
         prependNewline();
     }
-
-    generateNewBlock();
 }
 
+let start = false
+// 시작 함수
+function init() {
+    if (!start) {
+        start = true;
+        generateNewBlock();
+    } else {
+        return;
+    }
+}
+
+// 그림그려줌
 function prependNewline() {
     const li = document.createElement('li');
     const ul = document.createElement('ul');
@@ -51,7 +61,7 @@ function prependNewline() {
     $tetrisWrapper.prepend(li);
 }
 
-// block renderfing
+// block rendering
 function renderBlocks(moveType = "") {
 
     const { type, direction, top, left } = tempMovingItem;
@@ -70,7 +80,7 @@ function renderBlocks(moveType = "") {
             target.classList.add(type, "moving");
         } else {
             tempMovingItem = { ...MovingItem };
-            if(moveType==="retry"){
+            if (moveType === "retry") {
                 clearInterval(downInterval);
                 showGameOver();
             }
@@ -89,7 +99,7 @@ function renderBlocks(moveType = "") {
 
 }
 
-function showGameOver(){
+function showGameOver() {
     $gameover.style.display = 'flex';
 }
 
@@ -169,6 +179,26 @@ function dropBlock() {
 // event handling
 //////////////////////
 
+$start.addEventListener('click', () => {
+    init();
+})
+
+
+let stop = false;
+$stop.addEventListener('click', () => {
+    if (!stop) {
+        stop = true;
+        clearInterval(downInterval);
+        $stop.innerHTML = "CONTINUE";
+    } else {
+        stop = false;
+        $stop.innerHTML = "STOP";
+        downInterval = setInterval(() => {
+            moveBlock("top", 1)
+        }, duration)
+    }
+})
+
 // 키다운 이벤트
 document.addEventListener('keydown', (event) => {
     switch (event.keyCode) {
@@ -194,8 +224,6 @@ document.addEventListener('keydown', (event) => {
 })
 
 // 다시시작
-$restart.addEventListener('click', ()=>{
-    $tetrisWrapper.innerHTML="";
-    $gameover.style.display='none';
-    init();
+$restart.addEventListener('click', () => {
+    window.location.href=window.location.href; // 페이지 리로드
 })
