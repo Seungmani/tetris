@@ -1,12 +1,41 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tetris</title>
+
+    <link rel="stylesheet" href="./tetris.css">
 </head>
+
 <body>
-    
+    <div class="wrapper">
+        <div class="gameover" id="gameover">
+            <span>게임 종료</span>
+            <button id="regame" class="regame">다시 시작</button>
+        </div>
+        <div class="tetris-wrapper" id="tetris-wrapper">
+            <ul></ul>
+        </div>
+        <div class="info-wrapper">
+            <div class="title">tetris</div>
+            <div class="next-block-wrapper">
+                <p>next-block</p>
+                <div id="next-block-sahpe" class="next-block-sahpe" width="150" height="150"></div>
+            </div>
+            <div class="score-wrapper">
+                <span>SCORE : </span>
+                <span id="score">0</span>
+            </div>
+            <div class="play-btn-wrapper">
+                <button class="start-btn" id="start-btn">PLAY</button>
+                <button class="reset-btn" id="reset-btn">RESET</button>
+            </div>
+        </div>
+    </div>
 </body>
+<script src="./tetris.js" type="module"></script>
+
 </html>
