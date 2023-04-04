@@ -14,6 +14,8 @@
     <div class="wrapper">
         <div class="gameover" id="gameover">
             <span>게임 종료</span>
+            <div id="final-time"></div>
+            <div id="final-score"></div>
             <button id="regame" class="regame">다시 시작</button>
         </div>
         <div class="tetris-wrapper" id="tetris-wrapper">
@@ -29,6 +31,10 @@
                 <span>SCORE : </span>
                 <span id="score">0</span>
             </div>
+            <div class="time-wrapper">
+                <span>TIME : </span>
+                <span id="time">0</span>
+            </div>
             <div class="play-btn-wrapper">
                 <button class="start-btn" id="start-btn">PLAY</button>
                 <button class="stop-btn" id="stop-btn">STOP</button>
@@ -36,6 +42,6 @@
         </div>
     </div>
 </body>
-<script src="./tetris.js" type="module"></script>
+<script src="./tetris.js" ></script>
 
 </html>

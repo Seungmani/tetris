@@ -140,11 +140,21 @@ body{
 
 .info-wrapper .score-wrapper{
     width: 100%;
-    height: 50px;
+    height: 30px;
     font-size: 15px;
 
     position: absolute;
     top: 300px;
+
+}
+
+.info-wrapper .time-wrapper{
+    width: 100%;
+    height: 30px;
+    font-size: 15px;
+
+    position: absolute;
+    top: 340px;
 
 }
 

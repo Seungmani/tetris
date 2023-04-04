@@ -1,13 +1,175 @@
-import blocks from "./blcoks.js"
+// import blocks from "./blcoks.js"
 
 // DOM
 const $tetrisWrapper = document.querySelector('#tetris-wrapper > ul');
 const $gameover = document.querySelector('#gameover');
 const $score = document.querySelector('#score');
+const $finalScore = document.querySelector('#final-score');
+const $finalTime = document.querySelector('#final-time');
+const $time = document.querySelector('#time');
 const $restart = document.querySelector('#regame');
 const $start = document.querySelector("#start-btn");
 const $stop = document.querySelector("#stop-btn");
+const blocks = {
+    sqaure: [
+        [   
+            [0, 0], 
+            [0, 1], 
+            [1, 0],
+            [1, 1],
+        ],
+        [
+            [0, 0],
+            [0, 1],
+            [1, 0],
+            [1, 1],
+        ],
+        [
+            [0, 0],
+            [0, 1],
+            [1, 0],
+            [1, 1],
+        ],
+        [
+            [0, 0],
+            [0, 1],
+            [1, 0],
+            [1, 1],
+        ],
+    ],
+    bar: [
+        [
+            [1, 0],
+            [2, 0],
+            [3, 0],
+            [4, 0],
+        ],
+        [
+            [2, -1],
+            [2, 0],
+            [2, 1],
+            [2, 2],
+        ],
+        [
+            [1, 0],
+            [2, 0],
+            [3, 0],
+            [4, 0],
+        ],
+        [
+            [2, -1],
+            [2, 0],
+            [2, 1],
+            [2, 2],
+        ],
+    ],
+    tree: [
+        [
+            [1, 0],
+            [0, 1],
+            [1, 1],
+            [2, 1],
+        ],
+        [
+            [2, 1],
+            [1, 2],
+            [1, 1],
+            [1, 0],
+        ],
+        [
+            [2, 1],
+            [0, 1],
+            [1, 1],
+            [1, 2],
+        ],
+        [
+            [1, 0],
+            [0, 1],
+            [1, 1],
+            [1, 2],
+        ],
+    ],
+    zee: [
+        [
+            [0, 0],
+            [1, 0],
+            [1, 1],
+            [2, 1],
+        ],
+        [
+            [0, 1],
+            [1, 0],
+            [1, 1],
+            [0, 2],
+        ],
+        [
+            [0, 1],
+            [1, 1],
+            [1, 0],
+            [2, 0],
+        ],
+        [
+            [0, 0],
+            [0, 1],
+            [1, 1],
+            [1, 2],
+        ],
+    ],
+    elLeft: [
+        [
+            [0, 2],
+            [1, 0],
+            [1, 1],
+            [1, 2],
+        ],
+        [
+            [0, 0],
+            [0, 1],
+            [1, 1],
+            [2, 1],
+        ],
+        [
+            [1, 0],
+            [1, 1],
+            [1, 2],
+            [2, 0],
+        ],
+        [
+            [0, 0],
+            [1, 0],
+            [2, 0],
+            [2, 1],
+        ],
+    ],
+    elRight: [
+        [
+            [1, 2],
+            [0, 0],
+            [0, 1],
+            [0, 2],
+        ],
+        [
+            [0, 0],
+            [1, 0],
+            [0, 1],
+            [2, 0],
+        ],
+        [
+            [0, 0],
+            [1, 1],
+            [1, 2],
+            [1, 0],
+        ],
+        [
+            [0, 1],
+            [1, 1],
+            [2, 1],
+            [2, 0],
+        ],
+    ],
+}
 
+// export default blocks;
 
 // Setting
 const rows = 20;
@@ -17,6 +179,7 @@ const cols = 10
 let score = 0;
 let duration = 500; // 블락이 떨어지는 시간
 let downInterval;
+let timeInterval;
 let tempMovingItem; // 다음 아이템 임시 저장
 const MovingItem = {
     // 다음 블락 정보, 좌표
@@ -38,12 +201,22 @@ window.onload = () => {
     }
 }
 
+let startTime;
 let start = false
 // 시작 함수
 function init() {
     if (!start) {
         start = true;
         generateNewBlock();
+        startTime = new Date();
+        timeInterval = setInterval(() => {
+            const time = Math.floor((new Date() - startTime) / 1000);
+            $time.textContent = `${time}초`;
+            if (time % 60 === 0) {
+                duration -= 50; // 1분마다 속도 증가
+                console.log(duration);
+            }
+        }, 1000)
     } else {
         return;
     }
@@ -82,7 +255,15 @@ function renderBlocks(moveType = "") {
             tempMovingItem = { ...MovingItem };
             if (moveType === "retry") {
                 clearInterval(downInterval);
+                clearInterval(timeInterval);
                 showGameOver();
+
+                if(parseInt($time.textContent) <60){
+                    $finalTime.textContent = ` ${$time.textContent}초`;
+                } else{
+                    $finalTime.textContent = `${parseInt(parseInt($time.textContent)/60)}분 ${parseInt($time.textContent)%60}초`;
+                }
+                $finalScore.textContent = `${($score.textContent * (parseInt(parseInt($time.textContent)/60) + 1))}점`;
             }
             setTimeout(() => { // call stack over 방지
                 renderBlocks('retry');
@@ -113,7 +294,7 @@ function seizeBlock() {
 }
 
 function checkMatch() {
-
+    let count = 0;
     const childnode = $tetrisWrapper.childNodes;
     childnode.forEach((child) => {
         let match = true;
@@ -127,7 +308,8 @@ function checkMatch() {
             child.remove();
             prependNewline();
             score++;
-            $score.innerHTML = score;
+            count++;
+            $score.innerHTML = score * count;
         }
     })
 
@@ -189,6 +371,7 @@ $stop.addEventListener('click', () => {
     if (!stop) {
         stop = true;
         clearInterval(downInterval);
+        clearInterval(timeInterval);
         $stop.innerHTML = "CONTINUE";
     } else {
         stop = false;
@@ -196,6 +379,10 @@ $stop.addEventListener('click', () => {
         downInterval = setInterval(() => {
             moveBlock("top", 1)
         }, duration)
+        timeInterval = setInterval(() => {
+            const time = Math.floor((new Date() - startTime) / 1000);
+            $time.textContent = `${time}초`;
+        }, 1000)
     }
 })
 
@@ -225,5 +412,5 @@ document.addEventListener('keydown', (event) => {
 
 // 다시시작
 $restart.addEventListener('click', () => {
-    window.location.href=window.location.href; // 페이지 리로드
+    window.location.href = window.location.href; // 페이지 리로드
 })
