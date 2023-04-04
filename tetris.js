@@ -10,11 +10,12 @@ const $time = document.querySelector('#time');
 const $restart = document.querySelector('#regame');
 const $start = document.querySelector("#start-btn");
 const $stop = document.querySelector("#stop-btn");
+const $nextBlock = document.querySelector('#nextblock >ul');
 const blocks = {
     sqaure: [
-        [   
-            [0, 0], 
-            [0, 1], 
+        [
+            [0, 0],
+            [0, 1],
             [1, 0],
             [1, 1],
         ],
@@ -169,8 +170,6 @@ const blocks = {
     ],
 }
 
-// export default blocks;
-
 // Setting
 const rows = 20;
 const cols = 10
@@ -181,6 +180,7 @@ let duration = 500; // 블락이 떨어지는 시간
 let downInterval;
 let timeInterval;
 let tempMovingItem; // 다음 아이템 임시 저장
+let nextBlock; // 다음 블록 보여줌
 const MovingItem = {
     // 다음 블락 정보, 좌표
     type: '',
@@ -199,6 +199,10 @@ window.onload = () => {
     for (let i = 0; i < rows; i++) {
         prependNewline();
     }
+
+    for (let i = 0; i < 5; i++) {
+        prependNewBlock();
+    }
 }
 
 let startTime;
@@ -207,22 +211,26 @@ let start = false
 function init() {
     if (!start) {
         start = true;
-        generateNewBlock();
+        score = 0;
+        generateNewBlock(selectBlock());
         startTime = new Date();
         timeInterval = setInterval(() => {
             const time = Math.floor((new Date() - startTime) / 1000);
             $time.textContent = `${time}초`;
             if (time % 60 === 0) {
-                duration -= 50; // 1분마다 속도 증가
-                console.log(duration);
+                if(duration > 50){
+                    duration -= 50; // 1분마다 속도 증가
+                } else if( duration === 50){
+                    duration=10;
+                }
             }
         }, 1000)
-    } else {
+    } else { // 시작인데 한번 더 누르면
         return;
     }
 }
 
-// 그림그려줌
+// 테트리스 틀 그려줌
 function prependNewline() {
     const li = document.createElement('li');
     const ul = document.createElement('ul');
@@ -234,7 +242,19 @@ function prependNewline() {
     $tetrisWrapper.prepend(li);
 }
 
-// block rendering
+function prependNewBlock() {
+    const li = document.createElement('li');
+    const ul = document.createElement('ul');
+    for (let j = 0; j < 5; j++) {
+        const matrix = document.createElement('li');
+        ul.prepend(matrix);
+    }
+    li.prepend(ul)
+    $nextBlock.prepend(li);
+}
+
+
+// block 이동가능 여부 탐색
 function renderBlocks(moveType = "") {
 
     const { type, direction, top, left } = tempMovingItem;
@@ -258,12 +278,13 @@ function renderBlocks(moveType = "") {
                 clearInterval(timeInterval);
                 showGameOver();
 
-                if(parseInt($time.textContent) <60){
-                    $finalTime.textContent = ` ${$time.textContent}초`;
-                } else{
-                    $finalTime.textContent = `${parseInt(parseInt($time.textContent)/60)}분 ${parseInt($time.textContent)%60}초`;
+                if (parseInt($time.textContent) < 60) {
+                    $finalTime.textContent = `${$time.textContent}`;
+                } else {
+                    $finalTime.textContent = `${parseInt(parseInt($time.textContent) / 60)}분 ${parseInt($time.textContent) % 60}초`;
                 }
-                $finalScore.textContent = `${($score.textContent * (parseInt(parseInt($time.textContent)/60) + 1))}점`;
+                $finalScore.textContent = `${($score.textContent * (parseInt(parseInt($time.textContent) / 60) + 1))}점`;
+                return true;
             }
             setTimeout(() => { // call stack over 방지
                 renderBlocks('retry');
@@ -274,16 +295,19 @@ function renderBlocks(moveType = "") {
             return true;
         }
     });
+    // 블록을 성공적으로 랜더링했을 시 movingItem에 현재 블록의 상태를 저장
     MovingItem.left = left;
     MovingItem.top = top;
     MovingItem.direction = direction;
 
 }
 
+// 게임 종료
 function showGameOver() {
     $gameover.style.display = 'flex';
 }
 
+// 블럭 고정
 function seizeBlock() {
     const movingBlocks = document.querySelectorAll('.moving');
     movingBlocks.forEach((moving) => {
@@ -293,6 +317,7 @@ function seizeBlock() {
     checkMatch();
 }
 
+// 제거할 줄 탐색
 function checkMatch() {
     let count = 0;
     const childnode = $tetrisWrapper.childNodes;
@@ -313,10 +338,11 @@ function checkMatch() {
         }
     })
 
-    generateNewBlock();
+    generateNewBlock(nextBlock);
 }
 
-function generateNewBlock() {
+// 블럭 생성
+function generateNewBlock(type) {
 
     clearInterval(downInterval);
     // block 자동으로 내려옴
@@ -324,14 +350,46 @@ function generateNewBlock() {
         moveBlock("top", 1)
     }, duration)
 
-    const blocksArray = Object.entries(blocks);
-    const ramdomIndex = Math.floor(Math.random() * blocksArray.length);
-    MovingItem.type = blocksArray[ramdomIndex][0];
+    MovingItem.type = type;
     MovingItem.top = 0;
     MovingItem.left = 3; // 가운데에서 떨어지게
     MovingItem.direction = 0;
+
     tempMovingItem = { ...MovingItem };
-    renderBlocks;
+
+    renderBlocks();
+    showNextBlocks();
+}
+
+function showNextBlocks() {
+    // 다음 블록을 그리기 전에 이전의 블록을 제거
+    clearNextBlockGround();
+
+    const type = selectBlock();
+    const direction = 0;
+
+    blocks[type][direction].forEach((block) => {
+        let [x, y] = [block[0], block[1]];
+        const target = $nextBlock.childNodes[y].children[0].childNodes[x];
+        target.classList.add(type, "next-block");
+        target.style.outline = "1px solid #ccc";
+    });
+
+    nextBlock = type;
+};
+
+function clearNextBlockGround () {
+    $nextBlock.innerHTML = "";
+
+    for (let i = 0; i < 5; i++) {
+        prependNewBlock();
+    }
+};
+
+function selectBlock() {
+    const blockTypes = Object.keys(blocks);
+    const randomIndex = Math.floor(Math.random() * blockTypes.length);
+    return blockTypes[randomIndex];
 }
 
 // 만약 블럭이 범위를 벗어나거나 주변에 블럭이 있어서 이동불가능 한지 판단
@@ -351,6 +409,7 @@ function chageDirection() {
     renderBlocks();
 }
 
+// spacebar 누르면 빠르게 내려옴
 function dropBlock() {
     clearInterval(downInterval);
     downInterval = setInterval(() => {
@@ -364,7 +423,6 @@ function dropBlock() {
 $start.addEventListener('click', () => {
     init();
 })
-
 
 let stop = false;
 $stop.addEventListener('click', () => {
