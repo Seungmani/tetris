@@ -140,7 +140,12 @@ body{
     font-weight: bold;
     
     position: absolute;
-    top: 20px;
+    top: 5px;
+}
+
+.info-wrapper .level{
+    position: absolute;
+    top: 55px;
 }
 
 .info-wrapper .next-block-wrapper{

@@ -3,6 +3,7 @@
 // DOM
 const $tetrisWrapper = document.querySelector('#tetris-wrapper > ul');
 const $gameover = document.querySelector('#gameover');
+const $level = document.querySelector('#level');
 const $score = document.querySelector('#score');
 const $finalScore = document.querySelector('#final-score');
 const $finalTime = document.querySelector('#final-time');
@@ -176,6 +177,7 @@ const cols = 10
 
 // 변수
 let score = 0;
+let level=1;
 let duration = 500; // 블락이 떨어지는 시간
 let downInterval;
 let timeInterval;
@@ -199,7 +201,7 @@ window.onload = () => {
     for (let i = 0; i < rows; i++) {
         prependNewline();
     }
-
+    // 다음 블록 화면 그려줌
     for (let i = 0; i < 5; i++) {
         prependNewBlock();
     }
@@ -212,6 +214,7 @@ function init() {
     if (!start) {
         start = true;
         score = 0;
+        level=1;
         generateNewBlock(selectBlock());
         startTime = new Date();
         timeInterval = setInterval(() => {
@@ -220,8 +223,10 @@ function init() {
             if (time % 60 === 0) {
                 if(duration > 50){
                     duration -= 50; // 1분마다 속도 증가
+                    $level.innerHTML=`Lv.${++level}`;
                 } else if( duration === 50){
                     duration=10;
+                    $level.innerHTML=`Lv.10`;
                 }
             }
         }, 1000)
